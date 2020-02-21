@@ -19,7 +19,8 @@ namespace CoreEscuela
             engine.Inicializar();
             Printer.WriteTitle("BIENVENIDOS A LA ESCUELA");
             
-            var reporteador = new Reporteador(null);
+            var reporteador = new Reporteador(engine.GetDiccionarioObjetos());
+            reporteador.GetListaEvaluaciones();
             
 
         }
