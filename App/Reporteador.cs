@@ -17,20 +17,55 @@ namespace CoreEscuela.App
             _diccionario = dicObjEscuela;        
         }
 
-        public IEnumerable<Escuela> GetListaEvaluaciones()
+        public IEnumerable<Evaluación> GetListaEvaluaciones()
             {
-                IEnumerable<Escuela> rpta;
-                if ( _diccionario.TryGetValue(LlaveDiccionario.Escuela,out IEnumerable<ObjetoEscuelaBase> lista))
-                    rpta = lista.Cast<Escuela>();
+                if ( _diccionario.TryGetValue(LlaveDiccionario.Evaluación,out IEnumerable<ObjetoEscuelaBase> lista))
+                    return lista.Cast<Evaluación>();
                 else
-                    rpta = null;
-
-                return lista.Cast<Escuela>();
+                    return new List<Evaluación>();
                 
             }
 
-    }
+        public IEnumerable<String> GetListaAsignaturas(){
+            return GetListaAsignaturas(out var dummy);
+        }
 
-    
+        public IEnumerable<String> GetListaAsignaturas(out IEnumerable<Evaluación> lstEvaluaciones){
+            lstEvaluaciones = GetListaEvaluaciones();
+            return (from Evaluación ev in lstEvaluaciones
+                    select ev.Asignatura.Nombre).Distinct();
+        }
+
+        public Dictionary<string,IEnumerable<Evaluación>> GetDicEvaxAsig(){
+            var dicEvaxAsig = new Dictionary<string,IEnumerable<Evaluación>>();
+            var lstAsignaturas = GetListaAsignaturas(out var lstEvaluaciones);
+
+            foreach(var asig in lstAsignaturas){
+                var lstEva = from eva in lstEvaluaciones
+                                where eva.Asignatura.Nombre==asig
+                                select eva; 
+                dicEvaxAsig.Add(asig,lstEva);
+            }
+            return dicEvaxAsig;
+        }
+
+        public Dictionary<string,IEnumerable<object>> GetDicPromxAsignatura(){
+            var rpta = new Dictionary<string,IEnumerable<object>>();
+            var EvaxAsignatura = GetDicEvaxAsig();
+            
+            foreach(var evaxasig in EvaxAsignatura){
+                var obj = from eva in evaxasig.Value
+                            group 
+                            select new {
+                                eva.Alumno.UniqueId,
+                                eva.Alumno.Nombre,
+                                eva.Nota
+                            };
+            }
+
+            return rpta;
+        }
+
+    }
 
 }
